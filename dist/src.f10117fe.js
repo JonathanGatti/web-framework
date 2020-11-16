@@ -129,16 +129,22 @@ var Attributes =
 /** @class */
 function () {
   function Attributes(data) {
+    var _this = this;
+
     this.data = data;
+
+    this.get = function (key) {
+      return _this.data[key];
+    };
+
+    this.set = function (update) {
+      Object.assign(_this.data, update);
+    };
+
+    this.getAll = function () {
+      return _this.data;
+    };
   }
-
-  Attributes.prototype.get = function (key) {
-    return this.data[key];
-  };
-
-  Attributes.prototype.set = function (update) {
-    Object.assign(this.data, update);
-  };
 
   return Attributes;
 }();
@@ -156,22 +162,24 @@ var Eventing =
 /** @class */
 function () {
   function Eventing() {
+    var _this = this;
+
     this.events = {};
+
+    this.on = function (eventName, callback) {
+      var handlers = _this.events[eventName] || [];
+      handlers.push(callback);
+      _this.events[eventName] = handlers;
+    };
+
+    this.trigger = function (eventName) {
+      var handlers = _this.events[eventName];
+      if (!handlers || handlers.length === 0) return;
+      handlers.forEach(function (callback) {
+        return callback();
+      });
+    };
   }
-
-  Eventing.prototype.on = function (eventName, callback) {
-    var handlers = this.events[eventName] || [];
-    handlers.push(callback);
-    this.events[eventName] = handlers;
-  };
-
-  Eventing.prototype.trigger = function (eventName) {
-    var handlers = this.events[eventName];
-    if (!handlers || handlers.length === 0) return;
-    handlers.forEach(function (callback) {
-      return callback();
-    });
-  };
 
   return Eventing;
 }();
@@ -1981,25 +1989,26 @@ var Sync =
 /** @class */
 function () {
   function Sync(rootUrl) {
+    var _this = this;
+
     this.rootUrl = rootUrl;
+
+    this.fetch = function (id) {
+      return axios_1.default.get(_this.rootUrl + "/" + id);
+    };
+
+    this.save = function (data) {
+      var id = data.id;
+
+      if (id) {
+        return axios_1.default.put(_this.rootUrl + "/" + id, data);
+      } else {
+        return axios_1.default.post(_this.rootUrl, data);
+      }
+    };
   }
 
   ;
-
-  Sync.prototype.fetch = function (id) {
-    return axios_1.default.get(this.rootUrl + "/" + id);
-  };
-
-  Sync.prototype.save = function (data) {
-    var id = data.id;
-
-    if (id) {
-      return axios_1.default.put(this.rootUrl + "/" + id, data);
-    } else {
-      return axios_1.default.post(this.rootUrl, data);
-    }
-  };
-
   return Sync;
 }();
 
@@ -2030,6 +2039,58 @@ function () {
   }
 
   ;
+  Object.defineProperty(User.prototype, "on", {
+    get: function get() {
+      return this.events.on;
+    },
+    enumerable: false,
+    configurable: true
+  });
+  Object.defineProperty(User.prototype, "trigger", {
+    get: function get() {
+      return this.events.trigger;
+    },
+    enumerable: false,
+    configurable: true
+  });
+  Object.defineProperty(User.prototype, "get", {
+    get: function get() {
+      return this.attributes.get;
+    },
+    enumerable: false,
+    configurable: true
+  });
+
+  User.prototype.set = function (update) {
+    this.attributes.set(update);
+    this.events.trigger('change');
+  };
+
+  User.prototype.fetch = function () {
+    var _this = this;
+
+    var id = this.attributes.get('id');
+
+    if (typeof id !== 'number') {
+      throw new Error('cannot fetch with no id');
+    }
+
+    this.sync.fetch(id).then(function (res) {
+      return _this.set(res.data);
+    });
+  };
+
+  User.prototype.save = function () {
+    var _this = this;
+
+    var data = this.attributes.getAll();
+    this.sync.save(data).then(function (res) {
+      _this.trigger('save');
+    }).catch(function (e) {
+      console.log(e);
+    });
+  };
+
   return User;
 }();
 
@@ -2044,9 +2105,14 @@ Object.defineProperty(exports, "__esModule", {
 var User_1 = require("./models/User");
 
 var user = new User_1.User({
-  name: 'gion',
-  age: 20
+  id: 5,
+  name: 'new name ',
+  age: 0
 });
+user.on('save', function () {
+  console.log('user saved');
+});
+user.save();
 },{"./models/User":"src/models/User.ts"}],"../../../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';

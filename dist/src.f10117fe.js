@@ -2515,6 +2515,8 @@ var UserEdit_1 = require("./views/UserEdit");
 
 var User_1 = require("./models/User");
 
+var Collection_1 = require("./models/Collection");
+
 var user = User_1.User.buildUser({
   name: 'Gino',
   age: 20
@@ -2524,11 +2526,20 @@ var root = document.querySelector('#root');
 if (root) {
   var userEdit = new UserEdit_1.UserEdit(root, user);
   userEdit.render();
-  console.log(userEdit);
 } else {
   throw new Error('root element not found');
 }
-},{"./views/UserEdit":"src/views/UserEdit.ts","./models/User":"src/models/User.ts"}],"../../../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+
+var users = new Collection_1.Collection('http://localhost:3000/users', function (json) {
+  return User_1.User.buildUser(json);
+}); // users.on('change', () => {
+//   const root = document.getElementById('root');
+//   if (root) {
+//     new UserList(root, users).render();
+//   }
+// })
+// users.fetch();
+},{"./views/UserEdit":"src/views/UserEdit.ts","./models/User":"src/models/User.ts","./models/Collection":"src/models/Collection.ts"}],"../../../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
